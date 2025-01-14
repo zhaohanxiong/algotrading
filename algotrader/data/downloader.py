@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 
 
 DOWNLOADER_DIR = "algotrader/data/binanceDownloader"
-DOWNLOADER_FILE = os.path.join(DOWNLOADER_DIR, "/download-kline.py")
+DOWNLOADER_FILE = os.path.join(DOWNLOADER_DIR, "download-kline.py")
 
 CLEANED_DIR = "CRYPTO_DAILY_DATA"
 
@@ -42,31 +42,31 @@ class DataDownloader:
         self.sample_rate = sample_rate
         self.data_type = data_type
     
+    # def __post__init__(self):
+        self.base_path = f"{DOWNLOADER_DIR}\data\{self.market}\daily\{self.data_type}"
+    
     def data_download(self):
         os.system(
             (
                 f"python {self.downloader_script} "
-                f"-t {self.market} -s {" ".join(self.symbols)} "
+                f"-t {self.market} -s {' '.join(self.symbols)} "
                 f"-startDate {self.start_date.strftime('%Y-%m-%d')} "
                 f"-endDate {self.end_date.strftime('%Y-%m-%d')} "
                 f"-i {self.sample_rate} -skip-monthly 1"
             )
         )
 
-    def data_clean(self):
-        
-        base_path = f"{DOWNLOADER_DIR}\data\{self.market}\daily\klines"
-
+    def data_reformat(self):
         for symbol in self.symbols:
             
             os.mkdir(f"{CLEANED_DIR}\{symbol}")
 
             symbol_path = (
-                f"{base_path}\{symbol}\{self.sample_rate}\\"
+                f"{self.base_path}\{symbol}\{self.sample_rate}\\"
                 f"{self.start_date.strftime('%Y-%m-%d')}_{self.end_date.strftime('%Y-%m-%d')}"
             )
 
-            d_from, d_to = self.start_date, self.end_date - pd.timedelta(days=1)
+            d_from, d_to = self.start_date, self.end_date
             for date in pd.date_range(d_from, d_to, freq='d'):
                 
                 file_name = f"{symbol}-{self.sample_rate}-{date.strftime('%Y-%m-%d')}"
@@ -75,9 +75,13 @@ class DataDownloader:
                 df = pd.read_csv(zip_file.open(f'{file_name}.csv'), header=None)
                 df.columns = COLUMN_HEADINGS
 
-                df.to_parquet(f"CLEANED_DIR\{symbol}\{date.strftime('%Y-%m-%d')}.parquet")
+                df.to_parquet(f"{CLEANED_DIR}\{symbol}\{date.strftime('%Y-%m-%d')}.parquet")
 
-            shutil.rmtree(f"{base_path}\{symbol}")
+    def cleanup(self):
+        for symbol in self.symbols:
+            shutil.rmtree(f"{self.base_path}\{symbol}")
+
+        shutil.rmtree(f"{DOWNLOADER_DIR}\data")
 
 
 
@@ -104,4 +108,5 @@ if __name__ == "__main__":
         end_date = args.endDate
     )
     downloader.data_download()
-    downloader.data_clean()
+    downloader.data_reformat()
+    downloader.cleanup()
