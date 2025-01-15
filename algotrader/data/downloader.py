@@ -42,7 +42,6 @@ class DataDownloader:
         self.sample_rate = sample_rate
         self.data_type = data_type
     
-    # def __post__init__(self):
         self.base_path = f"{DOWNLOADER_DIR}\data\{self.market}\daily\{self.data_type}"
     
     def data_download(self):
@@ -59,7 +58,10 @@ class DataDownloader:
     def data_reformat(self):
         for symbol in self.symbols:
             
-            os.mkdir(f"{CLEANED_DIR}\{symbol}")
+            output_dir = f"{CLEANED_DIR}\{symbol}"
+            if os.path.exists(output_dir):
+                shutil.rmtree(output_dir)
+            os.mkdir(output_dir)
 
             symbol_path = (
                 f"{self.base_path}\{symbol}\{self.sample_rate}\\"
