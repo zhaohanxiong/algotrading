@@ -1,4 +1,4 @@
 ##### Download Data
 ```
-python .\algotrader\data\downloader.py -s BTCUSDT ETHUSDT -startDate 2025-01-01 -endDate 2025-01-05
+python .\algotrader\data\downloader.py -s BTCUSDT ETHBTC -startDate 2024-01-01 -endDate 2024-07-01
 ```
