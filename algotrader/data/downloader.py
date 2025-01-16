@@ -132,26 +132,18 @@ if __name__ == "__main__":
         '-endDate', dest='endDate',
         help='Ending date to download in [YYYY-MM-DD] format')
     parser.add_argument(
-        '-folder', dest='folder',
-        help='Directory to store the downloaded data')
-    
+        '-type', dest='type', type=str, choices={"both", "klines", "trades"},
+        help='Bar or trade data')
     args = parser.parse_args(sys.argv[1:])
-    downloader = DataDownloader(
-        symbols = args.symbols,
-        start_date = args.startDate,
-        end_date = args.endDate,
-        data_type = "klines"
-    )
-    downloader.data_download()
-    downloader.data_reformat()
-    downloader.cleanup()
 
-    downloader = DataDownloader(
-        symbols = args.symbols,
-        start_date = args.startDate,
-        end_date = args.endDate,
-        data_type = "trades"
-    )
-    downloader.data_download()
-    downloader.data_reformat()
-    downloader.cleanup()
+    data_types = ["klines", "trades"] if args.type == "both" else [args.type]
+    for dtype in data_types:
+        downloader = DataDownloader(
+            symbols = args.symbols,
+            start_date = args.startDate,
+            end_date = args.endDate,
+            data_type = dtype
+        )
+        downloader.data_download()
+        downloader.data_reformat()
+        downloader.cleanup()
